@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -13,64 +14,86 @@ class AutoVoter(object):
         self.browser = webdriver.Chrome()
         self.wait = WebDriverWait(self.browser, 10)
 
-        # it's 马麟
+        # it's 马麟's xpath
         self._vote_button = '//*[@id="EconomyUser"]/div[4]/div[2]/div[2]/a[1]'
-        # '//*[@id="elect"]/div[6]/div/div[2]/div/input'
         self._input_box = '#elect > div.alert > div > div.mobileInfo > div > input'
         self._radio_box = '//*[@id="elect"]/div[6]/div/div[3]/div[2]/div[1]/span[1]/input'
         self._option_box = "//option[@id='2']"
         self._submit_button = '//*[@id="elect"]/div[6]/input'
+        self._vote_success = '/html/body/div[4]/p'
+        self._confirm_button = '/html/body/div[4]/div[7]/div/button'
 
-    def vote(self):
+    def vote_main(self):
         print('正在投票')
         try:
             self.browser.get('http://i.feixin.10086.cn/activity/jnxcz/candidate/vote')
 
             time.sleep(1)
 
+            self._do_vote()
+
+            try:
+                self.close_floating()
+            except NoSuchElementException:
+                print('投票后又返回了资料填写页面，重新填写中...')
+                self._do_vote(first_use=False)
+                self.close_floating()
+
+            print('已投票')
+
+            self.browser.quit()
+
+        except TimeoutException:
+            self._do_vote()
+
+    def _do_vote(self, first_use=True):
+
+        if first_use:
             vote_button = self.wait.until(
                 EC.element_to_be_clickable((By.XPATH, self._vote_button))
             )
             vote_button.click()
-
             time.sleep(1)
 
-            input_box = self.wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, self._input_box))
-            )
-            input_box.send_keys('13702040007')
+        input_box = self.wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, self._input_box))
+        )
+        if first_use:
+            input_box.send_keys('13702040012')
 
-            time.sleep(1)
+        time.sleep(1)
 
-            radio = self.browser.find_element_by_xpath(self._radio_box)
-            radio.click()
+        radio = self.browser.find_element_by_xpath(self._radio_box)
+        radio.click()
 
-            time.sleep(1)
+        time.sleep(1)
 
-            option = self.wait.until(
-                EC.presence_of_element_located((By.XPATH, self._option_box))
-            )
-            option.click()
+        option = self.wait.until(
+            EC.presence_of_element_located((By.XPATH, self._option_box))
+        )
+        option.click()
 
-            time.sleep(1)
+        time.sleep(1)
 
-            submit_button = self.wait.until(
-                EC.element_to_be_clickable((By.XPATH, self._submit_button))
-            )
-            submit_button.click()
+        submit_button = self.wait.until(
+            EC.element_to_be_clickable((By.XPATH, self._submit_button))
+        )
+        submit_button.click()
 
-            time.sleep(3)
+        time.sleep(3)
 
-            revote_button = self.wait.until(
-                EC.presence_of_element_located((By.XPATH, self._vote_button))
-            )
-            revote_button.click()
-            print('已投票')
+        vote_again = self.wait.until(
+            EC.presence_of_element_located((By.XPATH, self._vote_button))
+        )
+        vote_again.click()
 
-        except TimeoutException:
-            return self.vote()
+        time.sleep(1)
+
+    def close_floating(self):
+        self.browser.find_element_by_xpath(self._vote_success)
+        self.browser.find_element_by_xpath(self._confirm_button).click()
 
 
 if __name__ == '__main__':
     av = AutoVoter()
-    av.vote()
+    av.vote_main()
