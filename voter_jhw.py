@@ -21,8 +21,9 @@ class AutoVoter(object):
         self.browser = webdriver.Chrome()
         self.wait = WebDriverWait(self.browser, 10)
 
-        # it's 文博's xpath
-        self._vote_button = '//*[@id="EconomyUser"]/div[5]/div[2]/div[2]/a[1]'
+        # it's 张妍's xpath
+        self._tab = '//*[@id="elect"]/div[3]/ul/li[4]/p'
+        self._vote_button = '//*[@id="EconomyUser"]/div[3]/div[2]/div[2]/a[1]'
         self._input_box = '#elect > div.alert > div > div.mobileInfo > div > input'
         self._radio_box = '//*[@id="elect"]/div[6]/div/div[3]/div[2]/div[1]/span[1]/input'
         self._option_box = "//option[@id='2']"
@@ -57,6 +58,13 @@ class AutoVoter(object):
             self._do_vote(mobile_number)
 
     def _do_vote(self, mobile_number, first_use=True):
+        tab = self.wait.until(
+            EC.presence_of_element_located((By.XPATH, self._tab))
+        )
+        tab.click()
+
+        time.sleep(1)
+
         if first_use:
             vote_button = self.wait.until(
                 EC.element_to_be_clickable((By.XPATH, self._vote_button))

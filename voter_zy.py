@@ -55,13 +55,13 @@ class AutoVoter(object):
             time.sleep(1)
 
         except TimeoutException:
-            self._do_vote()
+            self._do_vote(mobile_number)
 
     def _do_vote(self, mobile_number, first_use=True):
-        vote_button = self.wait.until(
-            EC.presence_of_element_located((By.XPATH, self._vote_button))
+        tab = self.wait.until(
+            EC.presence_of_element_located((By.XPATH, self._tab))
         )
-        vote_button.click()
+        tab.click()
 
         time.sleep(1)
 

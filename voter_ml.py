@@ -54,7 +54,7 @@ class AutoVoter(object):
             time.sleep(1)
 
         except TimeoutException:
-            self._do_vote()
+            self._do_vote(mobile_number)
 
     def _do_vote(self, mobile_number, first_use=True):
         if first_use:
