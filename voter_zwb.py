@@ -8,6 +8,7 @@ from config import *
 from staff_mobile import *
 import time
 import pymongo
+import argparse
 
 
 class AutoVoter(object):
@@ -20,8 +21,8 @@ class AutoVoter(object):
         self.browser = webdriver.Chrome()
         self.wait = WebDriverWait(self.browser, 10)
 
-        # it's 马麟's xpath
-        self._vote_button = '//*[@id="EconomyUser"]/div[4]/div[2]/div[2]/a[1]'
+        # it's 文博's xpath
+        self._vote_button = '//*[@id="EconomyUser"]/div[5]/div[2]/div[2]/a[1]'
         self._input_box = '#elect > div.alert > div > div.mobileInfo > div > input'
         self._radio_box = '//*[@id="elect"]/div[6]/div/div[3]/div[2]/div[1]/span[1]/input'
         self._option_box = "//option[@id='2']"
@@ -109,7 +110,17 @@ class AutoVoter(object):
         return MOBILE_NUMBERS
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='节能减排投票机')
+    parser.add_argument('-n', '--num', help='输入手机号码')
+    args_ = parser.parse_args()
+    return args_
+
+
 if __name__ == '__main__':
+    args = parse_args()
     av = AutoVoter()
-    for mobile_number in av.get_batch_staff():
-        av.vote_main(mobile_number)
+    if not args.num:
+        print('你妹，去搞个号码再来投票')
+    else:
+        av.vote_main(args.num)
